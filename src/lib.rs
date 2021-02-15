@@ -2,7 +2,7 @@
 #![crate_type = "lib"]
 //#![allow(unused_imports, dead_code, unused_variables)]
 
-pub extern crate russimp_sys as sys;
+pub use assimp_sys as sys;
 
 #[cfg(feature = "mint")]
 mod impl_mint;

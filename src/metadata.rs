@@ -236,7 +236,7 @@ fn metadata_for_box() {
     )
     .unwrap();
 
-    assert!(scene.metadata.is_none());
+    assert!(scene.metadata.unwrap().keys.contains(&"SourceAsset_Format".to_string()));
 }
 
 #[test]
