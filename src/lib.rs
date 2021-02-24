@@ -3,12 +3,8 @@
 //#![allow(unused_imports, dead_code, unused_variables)]
 
 pub use assimp_sys as sys;
-
-#[cfg(feature = "mint")]
-mod impl_mint;
-#[cfg(feature = "mint")]
-pub use impl_mint::*;
-
+#[macro_use]
+extern crate num_derive;
 use std::{
     error::Error,
     ffi::IntoStringError,
@@ -18,20 +14,33 @@ use std::{
 };
 use sys::{aiAABB, aiColor3D, aiColor4D, aiMatrix4x4, aiVector2D, aiVector3D};
 
-#[macro_use]
-extern crate num_derive;
-
 pub mod animation;
+pub use animation::*;
 pub mod bone;
+pub use bone::*;
 pub mod camera;
+pub use camera::*;
 pub mod face;
+pub use face::*;
 pub mod light;
+pub use light::*;
 pub mod material;
+pub use material::*;
 pub mod mesh;
+pub use mesh::*;
 pub mod metadata;
+pub use metadata::*;
 pub mod node;
+pub use node::*;
 pub mod scene;
+pub use scene::*;
 pub mod texture;
+pub use texture::*;
+
+#[cfg(feature = "mint")]
+mod impl_mint;
+#[cfg(feature = "mint")]
+pub use impl_mint::*;
 
 #[derive(Debug)]
 pub enum RussimpError {
