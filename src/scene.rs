@@ -421,11 +421,21 @@ impl From<&aiScene> for Scene {
 }
 
 impl Scene {
-    pub fn from_file(file_path: &str, flags: PostProcessSteps) -> Russult<Scene> {
+    pub fn from_file(file_path: impl Into<Vec<u8>>, flags: PostProcessSteps) -> Russult<Scene> {
         let bitwise_flag = flags.into_iter().fold(0, |acc, x| acc | (x as u32));
         let file_path = CString::new(file_path).unwrap();
 
         let raw_scene = Scene::get_scene_from_file(file_path, bitwise_flag);
+        let result = raw_scene.map_or(Err(Scene::get_error()), |scene| Ok(scene.into()));
+        Scene::drop_scene(raw_scene);
+
+        result
+    }
+
+    pub fn from_buffer(buffer: Box<[u8]>, flags: PostProcessSteps) -> Russult<Scene> {
+        let bitwise_flag = flags.into_iter().fold(0, |acc, x| acc | (x as u32));
+
+        let raw_scene = Scene::get_scene_from_buffer(&buffer, bitwise_flag);
         let result = raw_scene.map_or(Err(Scene::get_error()), |scene| Ok(scene.into()));
         Scene::drop_scene(raw_scene);
 
@@ -444,6 +454,19 @@ impl Scene {
     #[inline]
     fn get_scene_from_file<'a>(string: CString, flags: u32) -> Option<&'a aiScene> {
         unsafe { aiImportFile(string.as_ptr(), flags).as_ref() }
+    }
+
+    #[inline]
+    fn get_scene_from_buffer<'a>(buffer: &[u8], flags: u32) -> Option<&'a aiScene> {
+        unsafe {
+            aiImportFileFromMemory(
+                buffer.as_ptr() as *const _,
+                buffer.len() as _,
+                flags,
+                b"\0".as_ptr() as *const _,
+            )
+            .as_ref()
+        }
     }
 
     fn get_error() -> RussimpError {
