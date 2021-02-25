@@ -432,10 +432,18 @@ impl Scene {
         result
     }
 
-    pub fn from_buffer(buffer: Box<[u8]>, flags: PostProcessSteps) -> Russult<Scene> {
+    pub fn from_buffer(
+        buffer: &[u8],
+        format_hint: Option<impl Into<Vec<u8>>>,
+        flags: PostProcessSteps,
+    ) -> Russult<Scene> {
         let bitwise_flag = flags.into_iter().fold(0, |acc, x| acc | (x as u32));
+        let format_hint = match format_hint {
+            Some(extension) => CString::new(extension).unwrap(),
+            None => CString::default(),
+        };
 
-        let raw_scene = Scene::get_scene_from_buffer(&buffer, bitwise_flag);
+        let raw_scene = Scene::get_scene_from_buffer(buffer, bitwise_flag, format_hint);
         let result = raw_scene.map_or(Err(Scene::get_error()), |scene| Ok(scene.into()));
         Scene::drop_scene(raw_scene);
 
@@ -457,13 +465,17 @@ impl Scene {
     }
 
     #[inline]
-    fn get_scene_from_buffer<'a>(buffer: &[u8], flags: u32) -> Option<&'a aiScene> {
+    fn get_scene_from_buffer<'a>(
+        buffer: &[u8],
+        flags: u32,
+        format_hint: CString,
+    ) -> Option<&'a aiScene> {
         unsafe {
             aiImportFileFromMemory(
                 buffer.as_ptr() as *const _,
                 buffer.len() as _,
                 flags,
-                b"\0".as_ptr() as *const _,
+                format_hint.as_ptr(),
             )
             .as_ref()
         }
@@ -527,4 +539,36 @@ fn debug_scene() {
     .unwrap();
 
     dbg!(&scene);
+}
+
+#[test]
+fn bounding_box() {
+    let tetrahedron = "o T\n\
+        v  1  1  1\n\
+        v  1 -1 -1\n\
+        v -1  1 -1\n\
+        v -1 -1  1\n\
+        f 1 2 3\n\
+        f 1 3 4\n\
+        f 1 4 2\n\
+        f 2 4 3\n";
+
+    let scene =
+        Scene::from_buffer(tetrahedron.as_bytes(), Some("obj"), PostProcessSteps::new()).unwrap();
+
+    assert_eq!(
+        AABB {
+            min: Vector3D {
+                x: -1.,
+                y: -1.,
+                z: -1.
+            },
+            max: Vector3D {
+                x: 1.,
+                y: 1.,
+                z: 1.
+            }
+        },
+        scene.meshes[0].aabb
+    );
 }
