@@ -1,22 +1,28 @@
 # russimp ![russimp](https://github.com/jkvargas/russimp/workflows/russimp/badge.svg?branch=master) [![Crates.io](https://img.shields.io/crates/v/russimp.svg)](https://crates.io/crates/russimp)
 
-Rust bindings for Assimp (https://github.com/assimp/assimp)
+High level Rust bindings for [`assimp`](https://github.com/assimp/assimp).
 
 # Overview
 
-Russimp is a library for talking to the assimp library which enables you to read 3d models in different formats to a common structure.
-These bindings are based on assimp v5.0.1.
+Russimp is a high level wrapper around the `assimp` library. This is the Swiss
+army knife of polygonal 3D geometry import (and partly export). All supported
+formats are read into the same data structure.
+
+The bindings are based on `assimp` `5.0.1`.
 
 ## Helping
 
-You are very welcome to help with development, adding a feature, fixing a problem or just refactoring.
-Try to do it with tests =)
+You are very welcome to help with development, adding a feature, fixing a
+problem or just refactoring.
 
-We need help to compile it on windows and on mac.
+When making a PR try to add some tests. =)
+
+We also need help to make sure the build works as expected on Windows.
 
 ## Testing
 
-To test the api on your local machine you will need to have the environment variable GITHUB_WORKSPACE set up with the project root path.
+To test the API on your local machine you will need to have the environment
+variable GITHUB_WORKSPACE set up with the project root path.
 
 ```shell
 GITHUB_WORKSPACE=./ cargo test --verbose
@@ -26,16 +32,22 @@ GITHUB_WORKSPACE=./ cargo test --verbose
 
 ## Rust
 
-You will need rust stable, cmake, C and C++ compiler as well.
+Russimp builds with Rust stable, beta or nightly. You will also need CMake and
+C & C++ compiler installed.
 
-# How to use it?
+# How to Use It?
 
-Just call Scene::from with the filename and the flags you want. From the scene you will have access to the underlying structs.
+Just call Scene::from with the filename and the flags you want. From the scene
+you will have access to the underlying structs.
 
 ```rust
-let scene = Scene::from("myfile.blend",
-vec![PostProcessSteps::CalcTangentSpace,
-     PostProcessSteps::Triangulate,
-     PostProcessSteps::JoinIdenticalVertices,
-     PostProcessSteps::SortByPType]).unwrap();
+let scene = Scene::from_file(
+     "myfile.blend",
+     vec![
+          PostProcessSteps::CalcTangentSpace,
+          PostProcessSteps::Triangulate,
+          PostProcessSteps::JoinIdenticalVertices,
+          PostProcessSteps::SortByPType
+     ])
+     .unwrap();
 ```
